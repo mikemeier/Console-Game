@@ -172,8 +172,10 @@
 		 * @return Console\Service\Manager 
 		 */
 		public function unregisterUser(){
-			if($user = $this->getUser())
+			if($user = $this->getUser()){
 				$this->entityManager->remove($user);
+				$this->entityManager->flush();
+			}
 			$this->logoutUser();
 			return $this;
 		}
