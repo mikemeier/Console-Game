@@ -1,0 +1,48 @@
+@charset "UTF-8";
+* {
+	font-family: courier;
+	font-size: 10pt;
+	color: white;
+	background-color: black;
+}
+html, body {
+	margin: 0;
+	padding: 0;
+	height: 100%;
+	width: 100%;
+}
+#console {
+	width: 100%;
+	height: 100%;
+}
+#consoleOutput {
+	padding: 10px;
+	overflow-y: scroll;
+	height: 90%;
+}
+#consoleOutput .welcome {
+	color: blue;
+}
+#consoleOutput .line .command {
+	font-style: italic;
+}
+#consoleOutput .line .info {
+	color: blue;
+}
+#consoleOutput .line .part {
+	margin-right: 10px;
+}
+#consoleOutput .line .error {
+	color: red;
+}
+
+#consoleOutput .line .warning {
+	color: red;
+}
+#consoleInput {
+	width: 99%;
+	position: fixed;
+	bottom: 0px;
+	border: none;
+	padding: 5px;
+}
