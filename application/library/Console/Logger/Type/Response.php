@@ -3,13 +3,13 @@
 	namespace Console\Logger\Type;
 
 	use Console\Logger\Logger;
-	use Console\Response\Response as ResponseInterface;
+	use Console\Response\Response;
 
 	class Response implements Logger {
 
 		protected $response;
 
-		public function __construct(ResponseInterface $response){
+		public function __construct(Response $response){
 			$this->response = $response;
 		}
 
