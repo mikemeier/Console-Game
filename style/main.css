@@ -27,7 +27,7 @@ html, body {
 	font-style: italic;
 }
 #consoleOutput .line .info {
-	color: blue;
+	color: #00cc00;
 }
 #consoleOutput .line .part {
 	margin-right: 10px;
