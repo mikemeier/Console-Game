@@ -39,6 +39,7 @@
 			
 			$response->newLine('Welcome '. $user->getUsername(), array('info'));
 			$response->newLine('Last action: '. $user->getLastAction()->format('Y-m-d H:i:s'), array('info'));
+			$response->newLine('Your IP: '. $user->getIp(), array('info'));
 		}
 
 	}

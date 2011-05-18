@@ -35,6 +35,7 @@
 			$this->getNewCommandChain()
 				->addCommand($this->getCheckBreakCommand())
 				->addCommand($this->getCheckConnectionCommand())
+				->addCommand($this->getSetLastActionCommand())
 				->addCommand($this->getStoredLifecycleCommand())
 				->addCommand($this->getAuthCommand())
 				->addCommand($this->getCheckEmptyCommand())
@@ -58,6 +59,10 @@
 		
 		protected function getCheckConnectionCommand(){
 			return $this->commandFactory->getStandardCommand('CheckConnection');
+		}
+		
+		protected function getSetLastActionCommand(){
+			return $this->commandFactory->getStandardCommand('SetLastAction');
 		}
 		
 		protected function getStoredLifecycleCommand(){

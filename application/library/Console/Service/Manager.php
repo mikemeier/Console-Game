@@ -39,8 +39,7 @@
 				&&
 				($user = $this->entityManager->find('Console\Entity\User', $this->userStorage->get('id')))
 			){
-				$user->setLastAction();
-				$this->user = $user;
+				$this->setUser($user);
 			}
 		}
 		
@@ -140,6 +139,12 @@
 			return $this;
 		}
 		
+		/**
+		 *
+		 * @param Console\Command\Command $command
+		 * @param array $lifecycleOptions
+		 * @return Console\Service\Manager 
+		 */
 		public function createLifecycle(Command $command, array $lifecycleOptions){
 			$lifecycle = new Lifecycle($command);
 			foreach($lifecycleOptions as $status => $methodName)
@@ -180,6 +185,21 @@
 			return $this;
 		}
 		
+		/**
+		 *
+		 * @param int $timeout
+		 * @return array $onlineUsers 
+		 */
+		public function getOnlineUsers($timeout = null){
+			return $this->entityManager->getRepository('Console\Entity\User')->getOnlineUsers($timeout);
+		}
+		
+		/**
+		 *
+		 * @param string $username
+		 * @param string $password
+		 * @return Console\Entity\User or false 
+		 */
 		public function loginUser($username, $password){
 			$tmpUser = new User();
 			$tmpUser->setPassword($password);
@@ -190,6 +210,7 @@
 			);
 			
 			if($user = $this->entityManager->find('Console\Entity\User', $options)){
+				$this->setUserStorageId = true;
 				$this->setUser($user);
 				return $user;
 			}
@@ -207,6 +228,19 @@
 			$user->setUsername($username);
 			$user->setPassword($password);
 			$this->setUser($user);
+		}
+		
+		/**
+		 *
+		 * @return Console\ServiceManager; 
+		 */
+		public function setUserLastAction(){
+			if($this->user){
+				$this->user->setLastAction();
+				$this->entityManager->persist($this->user);
+				$this->entityManager->flush();
+			}
+			return $this;
 		}
 		
 		/**
@@ -236,8 +270,7 @@
 		 * @return Console\Service\Manager 
 		 */
 		protected function setUser(User $user){
-			$this->user				= $user;
-			$this->setUserStorageId = true;
+			$this->user	= $user;
 			$this->setIsLoggedin(true);
 			return $this;
 		}

@@ -4,7 +4,7 @@
 	<head>
 		<link rel="stylesheet" type="text/css" media="screen" href="style/main.css" />
 		<script type="text/javascript" src="javascript/library/Core.js"></script>
-		<script type="text/javascript" src="javascript/library/Console/manager.js"></script>
+		<script type="text/javascript" src="javascript/library/Console/Manager.js"></script>
 		<script type="text/javascript" src="javascript/library/Request/Handler.js"></script>
 		<script type="text/javascript" src="javascript/library/Request/Parser.js"></script>
 		<script type="text/javascript" src="javascript/library/Request/Request.js"></script>
