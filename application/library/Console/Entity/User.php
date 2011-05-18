@@ -18,21 +18,23 @@
 		 * @Id 
 		 * @GeneratedValue 
 		 * @Column(type="integer")
-		 * @var string
 		 */
 		protected $id;
 
 		/**
 		 * @Column(type="string", length=50, unique=true)
-		 * @var string
 		 */
 		protected $username;
 
 		/**
 		 * @Column(type="string", length=64)
-		 * @var string
 		 */
 		protected $password;
+		
+		/**
+		 * @Column(type="string", length=15, unique=true)
+		 */
+		protected $ip;
 
 		/**
 		 * @Column(type="datetime")
@@ -52,6 +54,10 @@
 		/** @PrePersist */
 		public function prePersist(){
 			$this->created = $this->lastAction = new \DateTime("now");
+		}
+		
+		public function setIp($ip){
+			$this->ip = $ip;
 		}
 		
 		public function setLastAction(\DateTime $dateTime = null){
@@ -76,6 +82,10 @@
 		
 		public function getId(){
 			return $this->id;
+		}
+		
+		public function getIp(){
+			return $this->ip;
 		}
 		
 		public function getLastAction(){

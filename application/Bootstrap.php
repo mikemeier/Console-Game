@@ -80,8 +80,8 @@
 	});
 	
 	//Configure commandStorage
-	$diContainer['commandStorage'] = $diContainer->asShared(function($c){
-		return new Console\Storage\Type\Session('command');
+	$diContainer['lifecycleStorage'] = $diContainer->asShared(function($c){
+		return new Console\Storage\Type\Session('lifecycle');
 	});
 
 	//Configure ServiceManager
@@ -90,7 +90,7 @@
 			$c->entityManager,
 			$c->classLoader,
 			$c->userStorage,
-			$c->commandStorage,
+			$c->lifecycleStorage,
 			array(
 				'host' => 'localhost',
 				'port' => '1414'

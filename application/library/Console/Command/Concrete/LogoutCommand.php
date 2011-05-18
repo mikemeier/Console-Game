@@ -11,8 +11,7 @@
 
 		public function execute(Request $request, Response $response){
 			$response->newLine('Goodbye', array('info'));
-			$response->isConnected = false;
-			$this->getServiceManager()->setIsLoggedin(false);
+			$this->getUserService()->setIsLoggedin(false);
 		}
 
 	}

@@ -10,22 +10,22 @@
 	class ConnectCommand extends AbstractCommand {
 
 		public function execute(Request $request, Response $response){
-			$sM	= $this->getServiceManager();
-			if($sM->isConnected()){
+			$serviceManager	= $this->getServiceManager();
+			$userService	= $this->getUserService();
+			if($userService->isConnected()){
 				$response->newLine('Already connected', array('info'));
 				return;
 			}
-			;
-			$host	= $sM->host;
-			$port	= $sM->port;
+			$host	= $serviceManager->getOption('host');
+			$port	= $serviceManager->getOption('port');
 			if($request->getParameter(1) == $host.":".$port){
 				$response->openConnection = true;
-				$sM->setIsConnected(true);
+				$userService->setIsConnected(true);
 			}else{
 				$response->closeConnection = true;
-				$sM->setIsConnected(false);
+				$userService->setIsConnected(false);
 			}
-			sleep(2);
+			sleep(mt_rand(1, 3));
 		}
 
 	}

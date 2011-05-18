@@ -15,9 +15,9 @@
 		);
 
 		public function execute(Request $request, Response $response){
-			if($this->getServiceManager()->isLoggedin())
+			if($this->getUserService()->isLoggedin())
 				return;
-			if(!\in_array($request->getCommand(true), $this->allowedCommands)){
+			if(!in_array($request->getCommand(true), $this->allowedCommands)){
 				$response->newLine('Not loggedin', array('error'));
 				return Command::COMMAND_CHAIN_STOP;
 			}

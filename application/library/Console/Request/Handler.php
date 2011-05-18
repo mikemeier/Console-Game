@@ -35,7 +35,7 @@
 			$this->getNewCommandChain()
 				->addCommand($this->getCheckBreakCommand())
 				->addCommand($this->getCheckConnectionCommand())
-				->addCommand($this->getSetLastActionCommand())
+				->addCommand($this->getPrepareUserCommand())
 				->addCommand($this->getStoredLifecycleCommand())
 				->addCommand($this->getAuthCommand())
 				->addCommand($this->getCheckEmptyCommand())
@@ -61,14 +61,13 @@
 			return $this->commandFactory->getStandardCommand('CheckConnection');
 		}
 		
-		protected function getSetLastActionCommand(){
-			return $this->commandFactory->getStandardCommand('SetLastAction');
+		protected function getPrepareUserCommand(){
+			return $this->commandFactory->getStandardCommand('PrepareUser');
 		}
 		
 		protected function getStoredLifecycleCommand(){
-			$sM = $this->serviceManager;
 			$cF = $this->commandFactory;
-			if($lifecycle = $sM->getStoredLifecycle())
+			if($lifecycle = $this->serviceManager->getLifecycleSerivce()->getStoredLifecycle())
 				return $cF->getProxyCommand($lifecycle->getCommand(), $lifecycle->getMethodName());
 			return $cF->getStandardCommand('Nullable');
 		}

@@ -10,9 +10,7 @@
 	class EchoCommand extends AbstractCommand {
 
 		public function execute(Request $request, Response $response){
-			if(!($echo = trim($request->getQueryString(false))))
-				return;
-			$response->newLine($echo, array('echo'));
+			$response->newLine($request->getQueryString(false), array('echo'));
 		}
 
 	}

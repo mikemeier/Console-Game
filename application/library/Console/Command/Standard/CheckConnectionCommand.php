@@ -15,9 +15,9 @@
 		);
 
 		public function execute(Request $request, Response $response){
-			if(($isConnected = $response->isConnected = $this->getServiceManager()->isConnected()))
+			if(($isConnected = $response->isConnected = $this->getUserService()->isConnected()))
 				return;
-			if(!\in_array($request->getCommand(true), $this->allowedCommands)){
+			if(!in_array($request->getCommand(true), $this->allowedCommands)){
 				$response->newLine('Not connected', array('error'));
 				return Command::COMMAND_CHAIN_STOP;
 			}

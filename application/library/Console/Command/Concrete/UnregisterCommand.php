@@ -24,7 +24,7 @@
 				$response->newLine('Action cancelled', array('info'));
 				return;
 			}
-			$this->getServiceManager()->unregisterUser();
+			$this->getUserService()->unregisterUser();
 			$response->newLine('Useraccount deleted', array('info'));
 			$response->newLine('Goodbye', array('info'));
 		}

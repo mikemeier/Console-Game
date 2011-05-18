@@ -16,7 +16,7 @@
 		);
 		
 		public function execute(Request $request, Response $response){
-			if($this->getServiceManager()->isLoggedin()){
+			if($this->getUserService()->isLoggedin()){
 				$response->newLine('Already loggedin', array('info'));
 				return;
 			}
@@ -25,18 +25,17 @@
 		}
 		
 		public function askForPass(Request $request, Response $response){
-			if(
-				($username = $request->getCommand()) 
-				&& 
-				!$this->getServiceManager()->isUsernameAlreadyInUse($username)
-			){
-				$this->setStoredVar('username', $username);
-				$this->setLifecycleStatus('pass');
-				$response->newLine('Passwort:');
-				return;
+			$username = $request->getCommand();
+			if($username = $request->getCommand()){
+				if(!$this->getUserService()->isUsernameAlreadyInUse($username)){
+					$this->setStoredVar('username', $username);
+					$this->setLifecycleStatus('pass');
+					$response->newLine('Passwort:');
+					return;
+				}
 			}
 			$response->newLine('Username invalid (Already in use or empty)', array('error'));
-			$response->newLine('Username:');
+			$response->newLine('Username:');			
 		}
 		
 		public function askForPass2(Request $request, Response $response){
@@ -57,8 +56,9 @@
 			
 			if($password == $password2){
 				$this->destroyLifecycle();
-				$this->getServiceManager()->registerUser($username, $password);				
+				$this->getUserService()->registerUser($username, $password);				
 				$response->newLine('Welcome '. $username, array('info'));
+				$response->newLine('Please login', array('info'));
 				return;
 			}
 			

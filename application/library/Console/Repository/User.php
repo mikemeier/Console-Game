@@ -16,4 +16,9 @@
 					->getResult();
 		}
 		
+		public function getUserIps(){
+			return $this->_em->createQuery("SELECT u.ip FROM Console\Entity\User u")
+					->getResult();
+		}
+		
 	}

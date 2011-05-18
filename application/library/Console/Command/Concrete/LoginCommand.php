@@ -15,7 +15,7 @@
 		);
 		
 		public function execute(Request $request, Response $response){
-			if($this->getServiceManager()->isLoggedin()){
+			if($this->getUserService()->isLoggedin()){
 				$response->newLine('Already loggedin', array('info'));
 				return;
 			}
@@ -32,7 +32,11 @@
 		public function checkLogin(Request $request, Response $response){
 			$this->destroyLifecycle();
 			
-			if(!$user = $this->getServiceManager()->loginUser($this->getStoredVar('username'), $request->getCommand())){
+			$username	= $this->getStoredVar('username');
+			$password	= $request->getCommand();
+			$user		= $this->getUserService()->loginUser($username, $password);
+			
+			if(!$user){
 				$response->newLine('Username and/or password wrong', array('error'));
 				return;
 			}

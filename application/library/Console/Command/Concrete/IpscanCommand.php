@@ -11,7 +11,7 @@
 
 		public function execute(Request $request, Response $response){
 			$response->newLine('Online:', array('info'));
-			$onlineUsers = $this->getServiceManager()->getOnlineUsers();
+			$onlineUsers = $this->getUserService()->getOnlineUsers();
 			foreach($onlineUsers as $user)
 				$response->newLine($user->getUsername(), array('info'));
 			if(count($onlineUsers) == 0)

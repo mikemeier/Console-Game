@@ -31,5 +31,12 @@
 		protected function getServiceManager(){
 			return $this->serviceManager;
 		}
+		
+		/**
+		 * @return Console\Service\Type\User 
+		 */
+		protected function getUserService(){
+			return $this->getServiceManager()->getUserService();
+		}
 
 	}

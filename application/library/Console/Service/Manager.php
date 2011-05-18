@@ -7,272 +7,106 @@
 	
 	use Console\Storage\Storage;
 	
-	use Console\Command\Command;
-	use Console\Command\Lifecycle\Lifecycle;
-	
-	use Console\Entity\User;
+	use Console\DI\Container as DIContainer;
 	
 	class Manager {
 
-		protected $entityManager, $autoLoader, $userStorage, $commandStorage, $options = array();
-		
-		protected $user = null;
-		protected $setUserStorageId = false;
+		protected $entityManager, $autoLoader, $userStorage, $lifecycleStorage, $options = array();
+		protected $serviceDIContainer;
 
 		/**
-		 *
 		 * @param Doctrine\ORM\EntityManager $entityManager
 		 * @param Doctrine\Common\ClassLoader $autoLoader
 		 * @param Console\Storage\Storage $userStorage
-		 * @param Console\Storage\Storage $commandStorage
+		 * @param Console\Storage\Storage $lifecycleStorage
 		 * @param array $options 
 		 */
-		public function __construct(EntityManager $entityManager, ClassLoader $autoLoader, Storage $userStorage, Storage $commandStorage, array $options = array()){
+		public function __construct(
+			EntityManager $entityManager, 
+			ClassLoader $autoLoader, 
+			Storage $userStorage, 
+			Storage $lifecycleStorage, 
+			array $options = array()
+		){
 			$this->entityManager	= $entityManager;
 			$this->autoLoader		= $autoLoader;
 			$this->userStorage		= $userStorage;
-			$this->commandStorage	= $commandStorage;
+			$this->lifecycleStorage	= $lifecycleStorage;
 			$this->options			= $options;
-			
-			if(
-				$this->userStorage->has('id')
-				&&
-				($user = $this->entityManager->find('Console\Entity\User', $this->userStorage->get('id')))
-			){
-				$this->setUser($user);
-			}
-		}
-		
-		public function __destruct(){
-			if($this->user){
-				$this->entityManager->persist($this->user);
-				$this->entityManager->flush();
-				if($this->setUserStorageId == true)
-					$this->userStorage->set('id', $this->user->getId());
-			}
+			$this->setupServiceDIContainer();
 		}
 
 		/**
-		 *
 		 * @param string $key
-		 * @return mixed 
+		 * @return mixed $value
 		 */
-		public function __get($key){
+		public function getOption($key){
 			return isset($this->options[$key]) ? $this->options[$key] : null;
 		}
-
-		/**
-		 *
-		 * @param mixed $key
-		 * @param mixed $value
-		 * @return Console\Service\Manager 
-		 */
-		public function __set($key, $value){
-			$this->options[$key] = $value;
-			return $this;
-		}
 		
 		/**
-		 *
-		 * @param string $username
-		 * @return bool 
-		 */
-		public function isUsernameAlreadyInUse($username){
-			if($this->entityManager->getRepository('Console\Entity\User')->findOneBy(array('username' => $username)))
-				return true;
-			return false;
-		}
-		
-		/**
-		 * 
 		 * @return Doctrine\Common\ClassLoader
 		 */
 		public function getAutoLoader(){
 			return $this->autoLoader;
 		}
+		
+		/**
+		 * @return Console\Service\Type\User
+		 */
+		public function getUserService(){
+			return $this->getService('user');
+		}
+		
+		/**
+		 * @return Console\Service\Type\Lifecycle
+		 */
+		public function getLifecycleSerivce(){
+			return $this->getService('lifecycle');
+		}
+		
+		/**
+		 * @return Console\Service\Type\Dhcp
+		 */
+		public function getDhcpService(){
+			return $this->getService('dhcp');
+		}
+		
+		protected function getService($id){
+			return $this->serviceDIContainer->$id;
+		}
 
-		/**
-		 * 
-		 * @return Console\Entity\User 
-		 */
-		public function getUser(){
-			return $this->user;
-		}
-		
-		/**
-		 * 
-		 * @return bool 
-		 */
-		public function isConnected(){
-			return (bool)$this->userStorage->get('isConnected');
-		}
-		
-		/**
-		 * 
-		 * @return bool 
-		 */
-		public function isLoggedin(){
-			return (bool)$this->userStorage->get('isLoggedin');
-		}
-		
-		/**
-		 *
-		 * @param bool $flag
-		 * @return Console\Service\Manager; 
-		 */
-		public function setIsConnected($flag){
-			if(false == $flag)
-				$this->logoutUser();
-			$this->userStorage->set('isConnected', (bool)$flag);
-			return $this;
-		}
-		
-		/**
-		 *
-		 * @param bool $flag
-		 * @return Console\Service\Manager 
-		 */
-		public function setIsLoggedin($flag){
-			if(false == $flag)
-				$this->logoutUser();
-			$this->userStorage->set('isLoggedin', (bool)$flag);
-			return $this;
-		}
-		
-		/**
-		 *
-		 * @param Console\Command\Command $command
-		 * @param array $lifecycleOptions
-		 * @return Console\Service\Manager 
-		 */
-		public function createLifecycle(Command $command, array $lifecycleOptions){
-			$lifecycle = new Lifecycle($command);
-			foreach($lifecycleOptions as $status => $methodName)
-				$lifecycle->setStatus($status, $methodName);
-			$this->storeLifecycle($lifecycle);
-			return $this;
-		}
-		
-		/**
-		 * 
-		 * @return Console\Command\Lifecycle\Lifecycle 
-		 */
-		public function getStoredLifecycle(){
-			if($lifecycle = $this->commandStorage->get('lifecycle'))
-				$lifecycle->getCommand()->__construct($this);
-			return $lifecycle;
-		}
-		
-		/**
-		 *
-		 * @return Console\Service\Manager 
-		 */
-		public function destroyStoredLifecycle(){
-			$this->commandStorage->delete('lifecycle');
-			return $this;
-		}
-		
-		/**
-		 *
-		 * @return Console\Service\Manager 
-		 */
-		public function unregisterUser(){
-			if($user = $this->getUser()){
-				$this->entityManager->remove($user);
-				$this->entityManager->flush();
-			}
-			$this->logoutUser();
-			return $this;
-		}
-		
-		/**
-		 *
-		 * @param int $timeout
-		 * @return array $onlineUsers 
-		 */
-		public function getOnlineUsers($timeout = null){
-			return $this->entityManager->getRepository('Console\Entity\User')->getOnlineUsers($timeout);
-		}
-		
-		/**
-		 *
-		 * @param string $username
-		 * @param string $password
-		 * @return Console\Entity\User or false 
-		 */
-		public function loginUser($username, $password){
-			$tmpUser = new User();
-			$tmpUser->setPassword($password);
+
+		protected function setupServiceDIContainer(){
+			$container			= new DIContainer();
 			
-			$options = array(
-				'username' => $username,
-				'password' => $tmpUser->getPassword()
-			);
+			$manager			= $this;
+			$eM					= $this->entityManager;
+			$userStorage		= $this->userStorage;
+			$lifecycleStorage	= $this->lifecycleStorage;
 			
-			if($user = $this->entityManager->find('Console\Entity\User', $options)){
-				$this->setUserStorageId = true;
-				$this->setUser($user);
-				return $user;
-			}
-			return false;
-		}
-		
-		/**
-		 *
-		 * @param string $username
-		 * @param string $password 
-		 * @return Console\Service\Manager 
-		 */
-		public function registerUser($username, $password){
-			$user = new User();
-			$user->setUsername($username);
-			$user->setPassword($password);
-			$this->setUser($user);
-		}
-		
-		/**
-		 *
-		 * @return Console\ServiceManager; 
-		 */
-		public function setUserLastAction(){
-			if($this->user){
-				$this->user->setLastAction();
-				$this->entityManager->persist($this->user);
-				$this->entityManager->flush();
-			}
-			return $this;
-		}
-		
-		/**
-		 *
-		 * @param Console\Command\Lifecycle\Lifecycle $lifecycle
-		 * @return Console\Service\Manager 
-		 */
-		protected function storeLifecycle(Lifecycle $lifecycle){
-			$this->commandStorage->set('lifecycle', $lifecycle);
-			return $this;
-		}
-		
-		/**
-		 *
-		 * @return Console\Service\Manager 
-		 */
-		protected function logoutUser(){
-			$this->userStorage->delete('id');
-			$this->userStorage->set('isLoggedin', false);
-			$this->user = null;
-			return $this;
-		}
-		
-		/**
-		 *
-		 * @param Console\Entity\User $user
-		 * @return Console\Service\Manager 
-		 */
-		protected function setUser(User $user){
-			$this->user	= $user;
-			$this->setIsLoggedin(true);
-			return $this;
+			//Setup User
+			$container['user'] = $container->asShared(function($c) use ($manager, $eM, $userStorage){
+				$userService = new Type\User($eM, $userStorage);
+				$userService->setServiceManager($manager);
+				return $userService;
+			});
+			
+			//Setup Lifecycle
+			$container['lifecycle'] = $container->asShared(function($c) use ($manager, $lifecycleStorage){
+				$lifecycleService = new Type\Lifecycle($lifecycleStorage);
+				$lifecycleService->setServiceManager($manager);
+				return $lifecycleService;
+			});
+			
+			//Setup IpManager
+			$container['dhcp'] = $container->asShared(function($c) use ($manager, $eM){
+				$dhcpService = new Type\Dhcp($eM);
+				$dhcpService->setServiceManager($manager);
+				return $dhcpService;
+			});
+			
+			$this->serviceDIContainer = $container;
 		}
 		
 	}

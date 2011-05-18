@@ -34,8 +34,7 @@
 		
 		protected function createLifecycle($status){
 			$this->setLifecycleStatus($status);
-			if($this->lifecycleOptions)
-				$this->getServiceManager()->createLifecycle($this, $this->lifecycleOptions);
+			$this->getLifecycleService()->createLifecycle($this, $this->lifecycleOptions);
 		}
 		
 		protected function setLifecycleStatus($status){
@@ -45,7 +44,14 @@
 		}
 		
 		protected function destroyLifecycle(){
-			$this->getServiceManager()->destroyStoredLifecycle();
+			$this->getLifecycleService()->destroyStoredLifecycle();
+		}
+		
+		/**
+		 * @return Console\Service\Type\Lifecycle 
+		 */
+		protected function getLifecycleService(){
+			return $this->getServiceManager()->getLifecycleSerivce();
 		}
 
 	}
