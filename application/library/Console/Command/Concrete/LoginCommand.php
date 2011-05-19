@@ -6,6 +6,10 @@
 	
 	use Console\Request\Request;
 	use Console\Response\Response;
+	
+	use Console\Service\Type\User	as UserService;
+	use Console\Entity\User			as UserEntity;
+	
 
 	class LoginCommand extends AbstractLifecycleCommand {
 		
@@ -36,14 +40,27 @@
 			$password	= $request->getCommand();
 			$user		= $this->getUserService()->loginUser($username, $password);
 			
-			if(!$user){
-				$response->newLine('Username and/or password wrong', array('error'));
+			if($user instanceof UserEntity){
+				$response->newLine('Welcome '. $user->getUsername(), array('info'));
+				$response->newLine('Last action: '. $user->getLastAction()->format('Y-m-d H:i:s'), array('info'));
+				$response->newLine('Your IP: '. $user->getIp()->getValue(), array('info'));
 				return;
 			}
 			
-			$response->newLine('Welcome '. $user->getUsername(), array('info'));
-			$response->newLine('Last action: '. $user->getLastAction()->format('Y-m-d H:i:s'), array('info'));
-			$response->newLine('Your IP: '. $user->getIp(), array('info'));
+			switch($user){
+				case UserService::ERROR_USER_PASS:
+					$response->newLine('Username and/or password wrong', array('error'));
+					return;
+				break;
+				case UserService::ERROR_IP:
+					$response->newLine('DHCP is out of IPs', array('error'));
+					return;
+				break;
+				default:
+					$response->newLine('Unknown error', array('error'));
+					return;
+				break;
+			}
 		}
 
 	}

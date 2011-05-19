@@ -20,7 +20,7 @@
 		/**
 		 * @param Console\Command\Command $command
 		 * @param array $lifecycleOptions
-		 * @return Console\Service\Manager 
+		 * @return Console\Service\Type\Lifecycle
 		 */
 		public function createLifecycle(Command $command, array $lifecycleOptions){
 			$lifecycle = new LifecycleManager($command);
@@ -40,7 +40,7 @@
 		}
 		
 		/**
-		 * @return Console\Service\Manager 
+		 * @return Console\Service\Type\Lifecycle 
 		 */
 		public function destroyStoredLifecycle(){
 			$this->storage->delete('lifecycle');
@@ -49,7 +49,7 @@
 		
 		/**
 		 * @param Console\Command\Lifecycle\Lifecycle $lifecycle
-		 * @return Console\Service\Manager 
+		 * @return Console\Service\Type\Lifecycle 
 		 */
 		protected function storeLifecycle(LifecycleManager $lifecycle){
 			$this->storage->set('lifecycle', $lifecycle);

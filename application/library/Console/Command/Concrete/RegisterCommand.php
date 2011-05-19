@@ -35,7 +35,7 @@
 				}
 			}
 			$response->newLine('Username invalid (Already in use or empty)', array('error'));
-			$response->newLine('Username:');			
+			$response->newLine('Username:');
 		}
 		
 		public function askForPass2(Request $request, Response $response){
@@ -54,17 +54,21 @@
 			$password	= $this->getStoredVar('password');
 			$password2	= $request->getCommand();
 			
-			if($password == $password2){
-				$this->destroyLifecycle();
-				$this->getUserService()->registerUser($username, $password);				
-				$response->newLine('Welcome '. $username, array('info'));
-				$response->newLine('Please login', array('info'));
+			if($password != $password2){
+				$this->setLifecycleStatus('pass');
+				$response->newLine('Passwords do not match', array('error'));
+				$response->newLine('Password:');
 				return;
 			}
+			$this->destroyLifecycle();
 			
-			$this->setLifecycleStatus('pass');
-			$response->newLine('Passwords do not match', array('error'));
-			$response->newLine('Password:');
+			if(!$this->getUserService()->registerUser($username, $password)){
+				$response->newLine('Registration failed', array('error'));
+				return;
+			}
+					
+			$response->newLine('Registration done', array('info'));
+			$response->newLine('Please login', array('info'));
 		}
 
 	}

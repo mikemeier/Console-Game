@@ -35,6 +35,14 @@
 			$this->options			= $options;
 			$this->setupServiceDIContainer();
 		}
+		
+		/**
+		 * @return Console\Service\Manager 
+		 */
+		public function flushEntityManager(){
+			$this->entityManager->flush();
+			return $this;
+		}
 
 		/**
 		 * @param string $key
@@ -75,7 +83,6 @@
 		protected function getService($id){
 			return $this->serviceDIContainer->$id;
 		}
-
 
 		protected function setupServiceDIContainer(){
 			$container			= new DIContainer();

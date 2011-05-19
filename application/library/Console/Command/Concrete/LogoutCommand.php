@@ -10,8 +10,8 @@
 	class LogoutCommand extends AbstractCommand {
 
 		public function execute(Request $request, Response $response){
+			$this->getUserService()->logoutUser();
 			$response->newLine('Goodbye', array('info'));
-			$this->getUserService()->setIsLoggedin(false);
 		}
 
 	}

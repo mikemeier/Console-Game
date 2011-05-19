@@ -42,6 +42,12 @@
 				->addClosureCommand($this->getConcreteCommandClosure())
 				->execute($request, $response);
 
+			try {
+				$this->serviceManager->flushEntityManager();
+			}catch(Exception $e){
+				$response->newLine($e->getMessage(), array('exception'));
+			}
+			
 			$response->setHeader();
 			echo $response->getOutput();
 		}
