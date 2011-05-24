@@ -5,6 +5,14 @@
 	
 	$em = $diContainer->entityManager;
 	
-	$ipType = $em->find('Console\Entity\User', array('username' => 'mYkon'));
+	$user = $em->find('Console\Entity\User', 1);
+	$type = $em->find('Console\Entity\MessageType', 1);
 	
-	echo $ipType->getUsername();
+	$message = new \Console\Entity\Message();
+	$message->setValue('TestMessage');
+	$message->setType($type);
+	
+	$user->addMessage($message);
+	
+	$em->persist($user);
+	$em->flush();

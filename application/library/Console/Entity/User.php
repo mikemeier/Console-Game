@@ -2,6 +2,8 @@
 
 	namespace Console\Entity;
 	
+	use Doctrine\Common\Collections\ArrayCollection;
+	
 	/**
 	 * @Entity(repositoryClass="Console\Repository\User")
 	 * @Table(name="user")
@@ -30,9 +32,19 @@
 		protected $password;
 		
 		/**
-		 * @OneToOne(targetEntity="Console\Entity\Ip", orphanRemoval=true, cascade={"all"})
+		 * @OneToOne(targetEntity="Console\Entity\Ip", cascade={"all"}, orphanRemoval=true)
 		 */
-		protected $ip;
+		protected $ip = null;
+		
+		/**
+		 * @OneToMany(targetEntity="Console\Entity\UserMessage", mappedBy="sender", cascade={"all"}, orphanRemoval=true)
+		 */
+		protected $sentMessages;
+		
+		/**
+		 * @OneToMany(targetEntity="Console\Entity\UserMessage", mappedBy="receiver", cascade={"all"}, orphanRemoval=true)
+		 */
+		protected $receivedMessages;
 
 		/**
 		 * @Column(type="datetime")
@@ -40,9 +52,16 @@
 		protected $created;
 		
 		/**
-		 * @Column(type="datetime", name="last_action")
+		 * @Column(type="datetime", name="last_action", nullable=true)
 		 */
 		protected $lastAction;
+		
+		public function __construct($username, $password){
+			$this->username			= $username;
+			$this->password			= hash_hmac(self::PASSWORD_ALGO, $password, self::PASSWORD_SALT);
+			$this->sentMessages		= new ArrayCollection();
+			$this->receivedMessages = new ArrayCollection();
+		}
 		
 		/** @PreUpdate */
 		public function preUpdate(){
@@ -51,7 +70,7 @@
 		
 		/** @PrePersist */
 		public function prePersist(){
-			$this->created = $this->lastAction = new \DateTime("now");
+			$this->created = new \DateTime("now");
 		}
 		
 		/**
@@ -69,24 +88,10 @@
 		}
 		
 		/**
-		 * @param string $username 
-		 */
-		public function setUsername($username){
-			$this->username = $username;
-		}
-		
-		/**
 		 * @return string 
 		 */
 		public function getPassword(){
 			return $this->password;
-		}
-		
-		/**
-		 * @param string $password 
-		 */
-		public function setPassword($password){
-			$this->password = hash_hmac(self::PASSWORD_ALGO, $password, self::PASSWORD_SALT);
 		}
 		
 		/**
@@ -97,14 +102,10 @@
 		}
 		
 		/**
-		 * @param Console\Entity\Ip $ip 
+		 * @return Doctrine\Common\Collections\ArrayCollection 
 		 */
-		public function setIp(Ip $ip){
-			$this->ip = $ip;
-		}
-		
-		public function removeIp(){
-			$this->ip = null;
+		public function getReceivedMessages(){
+			return $this->receivedMessages;
 		}
 		
 		/**
@@ -122,10 +123,27 @@
 		}
 		
 		/**
+		 * @param Console\Entity\User $receiver
+		 * @param Message $message
+		 * @param type $isRead 
+		 */
+		public function sendMessage(User $receiver, Message $message, $isRead = false){
+			$this->sentMessages[] = new UserMessage($this, $receiver, $message, $isRead);
+		}
+		
+		/**
 		 * @param \DateTime $dateTime 
 		 */
 		public function setLastAction(\DateTime $dateTime = null){
 			$this->lastAction = ($dateTime) ? $dateTime : new \DateTime("now");
+		}
+		
+		public function setIp(Ip $ip){
+			$this->ip = $ip;
+		}
+		
+		public function removeIp(){
+			$this->ip = null;
 		}
 		
 	}

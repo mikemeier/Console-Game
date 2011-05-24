@@ -15,8 +15,8 @@
 				$response->newLine('Not connected', array('info'));
 				return;
 			}
-			$response->isConnected = false;
 			$userService->setIsConnected(false);
+			$response->isConnected = false;
 		}
 
 	}

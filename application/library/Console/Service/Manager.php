@@ -80,6 +80,27 @@
 			return $this->getService('dhcp');
 		}
 		
+		/**
+		 * @return Console\Service\Type\Dns
+		 */
+		public function getDnsService(){
+			return $this->getService('dns');
+		}
+		
+		/**
+		 * @return Console\Service\Type\EntityFactory 
+		 */
+		public function getEntityFactoryService(){
+			return $this->getService('entityFactory');
+		}
+		
+		/**
+		 * @return Console\Service\Type\Message 
+		 */
+		public function getMessageService(){
+			return $this->getService('message');
+		}
+		
 		protected function getService($id){
 			return $this->serviceDIContainer->$id;
 		}
@@ -92,9 +113,16 @@
 			$userStorage		= $this->userStorage;
 			$lifecycleStorage	= $this->lifecycleStorage;
 			
+			//Setup Factory
+			$container['entityFactory'] = $container->asShared(function($c) use ($manager, $eM){
+				$entityFactory = new Type\EntityFactory($eM);
+				$entityFactory->setServiceManager($manager);
+				return $entityFactory;
+			});
+			
 			//Setup User
 			$container['user'] = $container->asShared(function($c) use ($manager, $eM, $userStorage){
-				$userService = new Type\User($eM, $userStorage);
+				$userService = new Type\User($eM, $c->entityFactory, $userStorage);
 				$userService->setServiceManager($manager);
 				return $userService;
 			});
@@ -106,11 +134,25 @@
 				return $lifecycleService;
 			});
 			
-			//Setup IpManager
+			//Setup Dhcp
 			$container['dhcp'] = $container->asShared(function($c) use ($manager, $eM){
-				$dhcpService = new Type\Dhcp($eM);
+				$dhcpService = new Type\Dhcp($eM, $c->entityFactory);
 				$dhcpService->setServiceManager($manager);
 				return $dhcpService;
+			});
+			
+			//Setup Dns
+			$container['dns'] = $container->asShared(function($c) use ($manager, $eM){
+				$dnsService = new Type\Dns($eM);
+				$dnsService->setServiceManager($manager);
+				return $dnsService;
+			});
+			
+			//Setup Message
+			$container['message'] = $container->asShared(function($c) use ($manager, $eM){
+				$messageService = new Type\Message($eM, $c->entityFactory);
+				$messageService->setServiceManager($manager);
+				return $messageService;
 			});
 			
 			$this->serviceDIContainer = $container;

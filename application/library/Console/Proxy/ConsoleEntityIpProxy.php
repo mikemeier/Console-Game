@@ -15,7 +15,7 @@ class ConsoleEntityIpProxy extends \Console\Entity\Ip implements \Doctrine\ORM\P
         $this->_entityPersister = $entityPersister;
         $this->_identifier = $identifier;
     }
-    private function _load()
+    private function __load()
     {
         if (!$this->__isInitialized__ && $this->_entityPersister) {
             $this->__isInitialized__ = true;
@@ -29,38 +29,26 @@ class ConsoleEntityIpProxy extends \Console\Entity\Ip implements \Doctrine\ORM\P
     
     public function prePersist()
     {
-        $this->_load();
+        $this->__load();
         return parent::prePersist();
     }
 
     public function getId()
     {
-        $this->_load();
+        $this->__load();
         return parent::getId();
     }
 
     public function getValue()
     {
-        $this->_load();
+        $this->__load();
         return parent::getValue();
-    }
-
-    public function setValue($value)
-    {
-        $this->_load();
-        return parent::setValue($value);
     }
 
     public function getType()
     {
-        $this->_load();
+        $this->__load();
         return parent::getType();
-    }
-
-    public function setType(\Console\Entity\IpType $type)
-    {
-        $this->_load();
-        return parent::setType($type);
     }
 
 

@@ -4,6 +4,9 @@
 	
 	abstract class AbstractService implements Service {
 		
+		/**
+		 * @var Console\Service\Manager 
+		 */
 		protected $serviceManager;
 		
 		/**
@@ -14,7 +17,6 @@
 		}
 		
 		/**
-		 *
 		 * @return Console\Service\Manager
 		 */
 		public function getServiceManager(){

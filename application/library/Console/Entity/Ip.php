@@ -22,7 +22,7 @@
 		protected $value;
 		
 		/**
-		 * @ManyToOne(targetEntity="Console\Entity\IpType", cascade={"persist"})
+		 * @ManyToOne(targetEntity="Console\Entity\IpType", cascade={"all"})
 		 */
 		protected $type;
 
@@ -31,9 +31,15 @@
 		 */
 		protected $created;
 		
+		public function __construct(IpType $type, $value){
+			$this->type		= $type;
+			if(!$this->value = self::getValidIp($value))
+				throw new Exception("$value is not a valid ip");
+		}
+		
 		/** @PrePersist */
 		public function prePersist(){
-			$this->created = $this->lastAction = new \DateTime("now");
+			$this->created = new \DateTime("now");
 		}
 		
 		/**
@@ -51,29 +57,13 @@
 		}
 		
 		/**
-		 * @param string $value 
-		 */
-		public function setValue($value){
-			if(!$ip = $this->checkIp($value))
-				throw new Exception("$value is not a valid ip");
-			$this->value = $ip;
-		}
-		
-		/**
 		 * @return Console\Entity\IpType 
 		 */
 		public function getType(){
 			return $this->type;
 		}
 		
-		/**
-		 * @param Console\Entity\IpType  $type 
-		 */
-		public function setType(IpType $type){
-			$this->type = $type;
-		}
-		
-		protected function checkIp($ip){
+		public static function getValidIp($ip){
 			return filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4);
 		}
 		

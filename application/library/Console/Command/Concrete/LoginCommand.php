@@ -41,8 +41,10 @@
 			$user		= $this->getUserService()->loginUser($username, $password);
 			
 			if($user instanceof UserEntity){
+				$lastAction = $user->getLastAction();
+				$lastActionString = $lastAction ? $lastAction->format('Y-m-d H:i:s') : 'never';
 				$response->newLine('Welcome '. $user->getUsername(), array('info'));
-				$response->newLine('Last action: '. $user->getLastAction()->format('Y-m-d H:i:s'), array('info'));
+				$response->newLine('Last action: '. $lastActionString, array('info'));
 				$response->newLine('Your IP: '. $user->getIp()->getValue(), array('info'));
 				return;
 			}

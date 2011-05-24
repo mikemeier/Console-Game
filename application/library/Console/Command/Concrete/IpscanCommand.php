@@ -11,9 +11,11 @@
 
 		public function execute(Request $request, Response $response){
 			$response->newLine('Online:', array('info'));
-			$onlineUsers = $this->getUserService()->getOnlineUsers();
+			$userService	= $this->getUserService();
+			$onlineUsers	= $userService->getOnlineUsers($userService->getUser());
+			
 			foreach($onlineUsers as $user)
-				$response->newLine($user->getUsername(), array('info'));
+				$response->newLine($user->getIp()->getValue() ." \t\t ". $user->getUsername(), array('info'));
 			if(count($onlineUsers) == 0)
 				$response->newLine('Nobody is online', array('warning'));
 		}

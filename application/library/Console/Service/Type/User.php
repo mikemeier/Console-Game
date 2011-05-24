@@ -11,7 +11,7 @@
 	
 	class User extends AbstractService {
 		
-		protected $storage, $entityManager;
+		protected $entityManager, $entityFactory, $storage;
 		
 		protected $user			= null;
 		protected $setStorageId	= false;
@@ -19,15 +19,16 @@
 		const ERROR_USER_PASS	= 1;
 		const ERROR_IP			= 2;
 		
-		public function __construct(EntityManager $entityManager, Storage $storage){
-			$this->storage			= $storage;
+		public function __construct(EntityManager $entityManager, EntityFactory $entityFactory, Storage $storage){
 			$this->entityManager	= $entityManager;
+			$this->entityFactory	= $entityFactory;
+			$this->storage			= $storage;
 			if($storage->has('id'))
 				$this->loginFromId($storage->get('id'));
 		}
 		
 		/**
-		 * @return Console\Entity\User 
+		 * @return Console\Entity\User
 		 */
 		public function getUser(){
 			return $this->user;
@@ -49,15 +50,17 @@
 		
 		/**
 		 * @param bool $flag
-		 * @return Console\Service\Type\User; 
+		 * @return Console\Service\Type\User
 		 */
 		public function setIsConnected($flag){
 			$this->storage->set('isConnected', (bool)$flag);
+			if(!$flag)
+				$this->logoutUser();
 			return $this;
 		}
 		
 		/**
-		 * @return Console\Service\Type\User 
+		 * @return Console\Service\Type\User
 		 */
 		public function setUserLastAction(){
 			if($user = $this->getUser())
@@ -68,20 +71,17 @@
 		/**
 		 * @param string $username
 		 * @param string $password
-		 * @return Console\Entity\User or Console\Service\Type\User::ERROR_* 
+		 * @return Console\Entity\User or Console\Service\Type\User::ERROR_*
 		 */
 		public function loginUser($username, $password){
-			$tmpUser = new UserEntity();
-			$tmpUser->setPassword($password);
-			
+			$tmpUser = $this->entityFactory->getUser($username, $password);	
 			$options = array(
-				'username' => $username,
+				'username' => $tmpUser->getUsername(),
 				'password' => $tmpUser->getPassword()
 			);
-			
 			if(!$user = $this->entityManager->find('Console\Entity\User', $options))
 				return self::ERROR_USER_PASS;
-			if(!$ip = $this->getServiceManager()->getDhcpService()->getUserIp())
+			if(!$ip = $this->getServiceManager()->getDhcpService()->getNewUserIp())
 				return self::ERROR_IP;
 			
 			$user->setIp($ip);
@@ -100,19 +100,17 @@
 		
 		/**
 		 * @param string $username
-		 * @param string $password 
+		 * @param string $password
 		 * @return Console\Entity\User
 		 */
 		public function registerUser($username, $password){
-			$user = new UserEntity();
-			$user->setUsername($username);
-			$user->setPassword($password);
+			$user = $this->entityFactory->getUser($username, $password);
 			$this->entityManager->persist($user);
 			return $user;
 		}
 		
 		/**
-		 * @return Console\Service\Type\User 
+		 * @return Console\Service\Type\User
 		 */
 		public function unregisterUser(){
 			if($user = $this->getUser())
@@ -123,20 +121,37 @@
 		
 		/**
 		 * @param int $timeout
-		 * @return array $onlineUsers 
+		 * @return array $onlineUsers
 		 */
-		public function getOnlineUsers($timeout = null){
-			return $this->entityManager->getRepository('Console\Entity\User')
-					->getOnlineUsers($timeout);
+		public function getOnlineUsers(UserEntity $self = null, $timeout = null){
+			$onlineUsers = $this->entityManager
+							->getRepository('Console\Entity\User')
+							->getOnlineUsers($timeout);
+			if(!$self)
+				return $onlineUsers;
+			foreach($onlineUsers as $key => $onlineUser){
+				if($onlineUser == $self){
+					unset($onlineUsers[$key]);
+					break;
+				}
+			}
+			return $onlineUsers;
 		}
 		
 		/**
 		 * @param string $username
-		 * @return bool 
+		 * @return bool
 		 */
 		public function isUsernameAlreadyInUse($username){
-			return  (bool)$this->entityManager->getRepository('Console\Entity\User')
+			return  (bool)$this->entityManager
+						->getRepository('Console\Entity\User')
 						->findOneBy(array('username' => $username));
+		}
+		
+		public function isUserOnline(UserEntity $user){
+			return  (bool)$this->entityManager
+						->getRepository('Console\Entity\User')
+						->isOnline($user->getId());
 		}
 		
 		protected function unsetUser(){
@@ -154,13 +169,11 @@
 		}
 		
 		/**
-		 * @return Console\Service\Type\User 
+		 * @return Console\Service\Type\User
 		 */
 		protected function loginFromId($id){
-			if($user = $this->entityManager->find('Console\Entity\User', $id)){
+			if($user = $this->entityManager->find('Console\Entity\User', $id))
 				$this->setUser($user);
-				$this->storage->set('id', $user->getId());
-			}
 			return $this;
 		}
 		

@@ -77,8 +77,8 @@ function ConsoleManager(input, output, body, allowSocket){
 		this.focusInput();
 	}
 
-	this.inputOnKeyDown = function(event){
-		var keyCode = event.keyCode;
+	this.inputOnKeyDown = function(e){
+		var keyCode = (window.event) ? e.which : e.keyCode;
 		if(keyCode == 13 && !this.input.disabled){
 			var command = this.input.value.trim();
 			if(command != ''){
